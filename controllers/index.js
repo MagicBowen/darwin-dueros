@@ -3,6 +3,7 @@ const Chatbot = require('darwin-sdk').Chatbot
 const Query = require('darwin-sdk').Query
 const OpenSkillEvent = require('darwin-sdk').OpenSkillEvent
 const QuitSkillEvent = require('darwin-sdk').QuitSkillEvent
+const PlayFinishEvent = require('darwin-sdk').PlayFinishEvent
 const Response = require('darwin-sdk').Response
 const Request = require('bot-sdk/lib/Request')
 const request_http = require('request')
@@ -54,6 +55,21 @@ class Bot extends BaseBot {
             const chatbotReply = await chatbot.dispose(event)
             return await this.buildResponse(chatbotReply)
         })
+
+        this.addEventListener('AudioPlayer.PlaybackFinished', async () => {
+            this.waitAnswer()
+            const event = new PlayFinishEvent(this.userId, request.getQuery())
+            event.setDisplay(this.isSupportDisplay())
+            const chatbotReply = await chatbot.dispose(event)
+            return await this.buildResponse(chatbotReply)            
+        });
+
+        this.addDefaultEventListener(async () => {
+            this.setExpectSpeech(false)
+            this.waitAnswer()
+            return {
+            }
+        })        
     }
 
     getQrcodeImageUrl() {
@@ -71,12 +87,6 @@ class Bot extends BaseBot {
     }
 
     async buildResponse(chatbotReply) {
-        if (chatbotReply.hasInstructOfQuit()) {
-            this.setExpectSpeech(false)
-            this.endDialog()
-            return {outputSpeech: chatbotReply.getReply()}
-        }
-
         if (this.shouldDisplayQrcode(chatbotReply)) {
             let reply = '请使用微信扫描二维码，打开小程序进行课程的录制和修改。'
             this.setExpectSpeech(false)
@@ -86,8 +96,13 @@ class Bot extends BaseBot {
             }
         }
 
+        if (chatbotReply.hasInstructOfQuit()) {
+            this.setExpectSpeech(false)
+            this.endDialog()
+        }
+
         return {
-            directives: [this.getTextTemplate(chatbotReply.getReply())],
+            directives: [this.getDirectives(chatbotReply)],
             outputSpeech: chatbotReply.getReply()
         }
     }
@@ -95,6 +110,22 @@ class Bot extends BaseBot {
     shouldDisplayQrcode(chatbotReply) {
         if (!this.isSupportDisplay() || this.agent != 'course-record') return false
         return (chatbotReply.getReply().indexOf('哒尔文') != -1)
+    }
+
+    getDirectives(chatbotReply) {
+        const directives = [this.getTextTemplate(chatbotReply.reply)]
+        const instructs = chatbotReply.getInstructs()
+        if (!instructs) return directives
+        
+        for (let instruct of instructs) {
+            if (instruct.type === 'play-audio') {
+                const Play = BaseBot.Directive.AudioPlayer.Play
+                this.setExpectSpeech(false)
+                // dueros only support to play audio url of https
+                directives.push(new Play(instruct['url'].replace('https', 'http'), Play.REPLACE_ALL))
+            }
+        }
+        return directives
     }
 
     getTextTemplate(text) {
