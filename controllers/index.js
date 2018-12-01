@@ -123,6 +123,8 @@ class Bot extends BaseBot {
                 this.setExpectSpeech(false)
                 // dueros only support to play audio url of https
                 directives.push(new Play(instruct['url'].replace('https', 'http'), Play.REPLACE_ALL))
+                // only support play one audio in directives
+                break
             }
         }
         return directives
