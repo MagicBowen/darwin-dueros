@@ -20,7 +20,7 @@ class Bot extends BaseBot {
         const request = new Request(postData)
         const botId = request.getBotId()
         this.agent = config.agents[botId].name
-        this.title = config.agents[botId].name.title
+        this.title = config.agents[botId].title
         this.background = config.agents[botId].background
         this.userId = 'dueros_' + request.getUserId()
 
