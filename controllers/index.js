@@ -113,7 +113,7 @@ class Bot extends BaseBot {
     }
 
     getDirectives(chatbotReply) {
-        const directives = [this.getTextTemplate(chatbotReply.reply)]
+        const directives = [this.getTextTemplate(chatbotReply.getReply())]
         const instructs = chatbotReply.getInstructs()
         if (!instructs) return directives
         
