@@ -102,7 +102,7 @@ class Bot extends BaseBot {
         }
 
         return {
-            directives: [this.getDirectives(chatbotReply)],
+            directives: this.getDirectives(chatbotReply),
             outputSpeech: chatbotReply.getReply()
         }
     }
