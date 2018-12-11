@@ -100,7 +100,7 @@ class Bot extends BaseBot {
             this.setExpectSpeech(false)
             this.endDialog()
         }
-
+       
         return {
             directives: this.getDirectives(chatbotReply),
             outputSpeech: chatbotReply.getReply()
@@ -113,10 +113,13 @@ class Bot extends BaseBot {
     }
 
     getDirectives(chatbotReply) {
-        const directives = [this.getTextTemplate(chatbotReply.getReply())]
+        const directives = []
         const instructs = chatbotReply.getInstructs()
         if (!instructs) return directives
-        
+
+        if (this.isSupportDisplay()) {
+            directives.push(this.getTextTemplate(chatbotReply.getReply()))
+        }
         for (let instruct of instructs) {
             if (instruct.type === 'play-audio') {
                 const Play = BaseBot.Directive.AudioPlayer.Play
