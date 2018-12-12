@@ -115,11 +115,10 @@ class Bot extends BaseBot {
     getDirectives(chatbotReply) {
         const directives = []
         const instructs = chatbotReply.getInstructs()
-        if (!instructs) return directives
-
         if (this.isSupportDisplay()) {
             directives.push(this.getTextTemplate(chatbotReply.getReply()))
         }
+        if (!instructs) return directives
         for (let instruct of instructs) {
             if (instruct.type === 'play-audio') {
                 const Play = BaseBot.Directive.AudioPlayer.Play
