@@ -100,7 +100,7 @@ class Bot extends BaseBot {
             this.setExpectSpeech(false)
             this.endDialog()
         }
-       
+        this.setExpectSpeech(true)
         return {
             directives: this.getDirectives(chatbotReply),
             outputSpeech: chatbotReply.getReply()
